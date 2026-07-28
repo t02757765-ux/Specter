@@ -21,7 +21,7 @@ class SignatureMatcher:
             }
             detected_technologies.append(tech_info)
 
-        # Extract Server Header Info
+        # Extract Server Header
         headers = http_data.get("headers", {})
         headers_str = "\n".join([f"{k.lower()}: {v.lower()}" for k, v in headers.items()])
         server_header = headers.get("Server") or headers.get("server")
@@ -32,7 +32,7 @@ class SignatureMatcher:
                 "version": str(server_header)
             })
 
-        # Check PHP precise version from Header
+        # PHP Version Check
         php_match = re.search(r"x-powered-by:.*php/([\d\.]+)", headers_str, re.IGNORECASE)
         if php_match:
             detected_technologies.append({
