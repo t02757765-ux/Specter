@@ -17,7 +17,7 @@ class OllamaModelsScript:
                         models = [m.get("name") for m in data.get("models", [])]
                         return {
                             "vulnerable": True,
-                            "issue": "Unauthenticated Ollama AI API Access",
+                            "issue": "Unauthenticated Ollama AI API Exposed",
                             "hosted_models": models
                         }
         except Exception:
