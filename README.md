@@ -16,7 +16,20 @@ pip install -e .
 ```bash
 docker build -t specter .
 docker run --rm specter -t 192.168.1.1 -p 80,443,5432
-Kullanım ParametreleriParametreKısa KodAçıklama--target-tHedef IP (192.168.1.1), Aralık (10.0.0.1-50), CIDR (192.168.1.0/24) veya Domain (example.com).--ports-pTarayacak port aralığı (Örn: 22,80,443,8000-8080).--concurrency-cEşzamanlı asenkron iş parçacığı sayısı (Varsayılan: 500).--rate-limit-rSaniyedeki maksimum istek/paket limiti.--timeout-Soket zaman aşımı süresi (saniye).--json-JSON çıktı dosya yolu.--csv-CSV çıktı dosya yolu.--html-HTML rapor dosya yolu.Terminal Çıktı ÖrneğiPlaintext=== SPECTER RECONNAISSANCE SCAN RESULTS ===
+```
+### Kullanım Parametreleri
+
+
+| Parametre | Kısa Kod | Açıklama |
+| :--- | :---: | :--- |
+| `--target` | `-t` | Hedef IP (192.168.1.1), Aralık (10.0.0.1-50), CIDR (192.168.1.0/24) veya Domain (example.com). |
+| `--ports` | `-p` | Tarayacak port aralığı (Örn: 22,80,443,8000-8080). |
+| `--concurrency` | `-c` | Eşzamanlı asenkron iş parçacığı sayısı (Varsayılan: 500). |
+| `--rate-limit` | `-r` | Saniyedeki maksimum istek/paket limiti. |
+| `--timeout` | `-` | Soket zaman aşımı süresi (saniye). |
+| `--json` | `-` | JSON çıktı dosya yolu. |
+| `--csv` | `-` | CSV çıktı dosya yolu. |
+| `--html` | `-` | HTML rapor dosya yolu. |
 
 ┌──────────────────────────────────────────────────────────┐
 │ Target: 192.168.1.100                                    │
