@@ -7,21 +7,18 @@ class TargetResolver:
     def resolve_target(target_input: str) -> List[str]:
         target_input = target_input.strip()
         
-        # Single IP check
         try:
             ip = ipaddress.ip_address(target_input)
             return [str(ip)]
         except ValueError:
             pass
 
-        # CIDR notation check
         try:
             net = ipaddress.ip_network(target_input, strict=False)
             return [str(ip) for ip in net.hosts()]
         except ValueError:
             pass
 
-        # IP Range check (e.g. 192.168.1.1-50)
         if "-" in target_input and not target_input.startswith("http"):
             parts = target_input.split("-")
             if len(parts) == 2:
@@ -42,7 +39,6 @@ class TargetResolver:
                 except ValueError:
                     pass
 
-        # Domain FQDN Resolution
         try:
             resolved_ip = socket.gethostbyname(target_input)
             return [resolved_ip]
