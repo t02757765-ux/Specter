@@ -18,3 +18,7 @@ dependencies = [
 
 [project.scripts]
 specter = "specter.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["specter*"]
