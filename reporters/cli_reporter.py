@@ -24,16 +24,16 @@ class CLIReporter:
             table = Table(show_header=True, header_style="bold magenta")
             table.add_column("Port", style="dim", width=8)
             table.add_column("Protocol / Mode", width=16)
-            table.add_column("Banner / Server Header", width=35)
-            table.add_column("Fingerprinted Stack", width=40)
+            table.add_column("Banner / Handshake Details", width=38)
+            table.add_column("Fingerprinted Stack", width=38)
 
             for port_detail in result["details"]:
                 port_num = str(port_detail["port"])
                 is_http = "HTTP/HTTPS" if port_detail["http_data"]["is_http"] else "RAW Socket"
                 
-                banner = port_detail["raw_socket"]["banner"].strip().replace("\r\n", " ").replace("\n", " ")
-                if len(banner) > 30:
-                    banner = banner[:30] + " (truncated)"
+                banner = port_detail["raw_socket"]["extracted_version"] or port_detail["raw_socket"]["banner"].strip().replace("\r\n", " ").replace("\n", " ")
+                if len(banner) > 35:
+                    banner = banner[:35] + "..."
                 if not banner and port_detail["http_data"]["is_http"]:
                     server = port_detail["http_data"]["headers"].get("Server") or port_detail["http_data"]["headers"].get("server")
                     banner = f"HTTP Server: {server}" if server else "HTTP Endpoint Active"
@@ -46,4 +46,14 @@ class CLIReporter:
                 table.add_row(port_num, is_http, banner or "-", tech_str)
 
             self.console.print(table)
+
+            # Active Scripts Output Section
+            script_outputs = result.get("script_outputs", [])
+            if script_outputs:
+                self.console.print("  [bold red]▶ Active Script Audit Findings:[/bold red]")
+                for s_out in script_outputs:
+                    p = s_out["port"]
+                    s_name = s_out["script_name"]
+                    data = s_out["output"]
+                    self.console.print(f"    [yellow][Port {p} - {s_name}][/yellow] [bold white]{data.get('issue')}[/bold white]: {data.get('details') or data.get('hosted_models')}")
             self.console.print("\n")
