@@ -20,8 +20,8 @@ class RedisInfoScript:
             if "redis_version" in res_str:
                 return {
                     "vulnerable": True,
-                    "issue": "Unauthenticated Redis Access Allowed",
-                    "details": "Server answered 'INFO Server' without password authentication."
+                    "issue": "Unauthenticated Redis Access",
+                    "details": "Server allowed unauthenticated 'INFO Server' command execution."
                 }
         except Exception:
             pass
