@@ -8,6 +8,8 @@ from specter.core.rate_limiter import RateLimiter
 from specter.core.scanner import PortScanner
 from specter.probes.raw_socket import RawSocketProbe
 from specter.probes.http_probe import HTTPProbe
+from specter.probes.jarm import JARMProbe
+from specter.exploitdb.indexer import ExploitDBIndexer
 from specter.scripts.engine import ScriptEngine
 from specter.signatures.matcher import SignatureMatcher
 from specter.reporters.cli_reporter import CLIReporter
@@ -41,8 +43,19 @@ async def run_specter(args: argparse.Namespace) -> None:
     scanner = PortScanner(config.max_concurrency, config.timeout, rate_limiter, config.retries, verbose_cb=log_cb)
     raw_probe = RawSocketProbe(config.timeout, verbose_cb=log_cb)
     http_probe = HTTPProbe(config.timeout, config.user_agent, verbose_cb=log_cb)
+    jarm_probe = JARMProbe(config.timeout, verbose_cb=log_cb)
     script_engine = ScriptEngine(verbose_cb=log_cb)
     matcher = SignatureMatcher()
+
+    # Exploit-DB Offline Indexer Setup
+    edb_indexer = None
+    if args.exploitdb:
+        edb_indexer = ExploitDBIndexer(config.exploitdb_csv)
+        if edb_indexer.loaded:
+            if args.verbose:
+                console.print(f"[bold green][+] Exploit-DB Database loaded: {len(edb_indexer.exploits)} entries.[/bold green]")
+        else:
+            console.print(f"[bold red][-] Warning: Exploit-DB CSV file ({config.exploitdb_csv}) not found.[/bold red]")
 
     all_scan_results = []
 
@@ -54,20 +67,25 @@ async def run_specter(args: argparse.Namespace) -> None:
         target_detail = {
             "target": ip,
             "open_ports": open_ports,
+            "jarm_hash": None,
             "details": [],
+            "exploitdb_matches": [],
             "script_outputs": []
         }
 
+        # 1. Salesforce JARM TLS Scan
+        if any(p in open_ports for p in (443, 8443, 9443)):
+            ssl_port = 443 if 443 in open_ports else [p for p in open_ports if p in (8443, 9443)][0]
+            jarm_hash = await jarm_probe.scan_jarm(ip, ssl_port)
+            target_detail["jarm_hash"] = jarm_hash
+
         for port in open_ports:
-            # 1. Raw Binary Socket Probe Execution
             raw_res = await raw_probe.execute_probe(ip, port)
             
-            # 2. HTTP Deep Probe Execution
             scheme = "https" if port in (443, 8443) else "http"
             base_url = f"{scheme}://{ip}:{port}"
             http_res = await http_probe.analyze_url(base_url, config.http_endpoints)
 
-            # 3. Signature Matching Engine
             techs = matcher.match(raw_res, http_res)
 
             target_detail["details"].append({
@@ -77,7 +95,15 @@ async def run_specter(args: argparse.Namespace) -> None:
                 "technologies": techs
             })
 
-        # 4. Optional Active Scripting Engine Execution
+            # Exploit-DB Matches Lookup
+            if edb_indexer and edb_indexer.loaded:
+                for t in techs:
+                    matches = edb_indexer.search_exploits(t["name"], t["version"])
+                    for m in matches:
+                        if not any(e["id"] == m["id"] for e in target_detail["exploitdb_matches"]):
+                            target_detail["exploitdb_matches"].append(m)
+
+        # Active Scripting Engine Execution
         if args.run_scripts and open_ports:
             if args.verbose:
                 console.print(f"[bold green][*] Triggering Active Script Engine for {ip}...[/bold green]")
@@ -108,7 +134,8 @@ def main() -> None:
     parser.add_argument("-c", "--concurrency", type=int, help="Max Async Concurrency")
     parser.add_argument("-r", "--rate-limit", type=int, help="Rate limit (packets/sec)")
     parser.add_argument("-v", "--verbose", action="store_true", help="Enable verbose debug logging output")
-    parser.add_argument("--run-scripts", action="store_true", help="Enable active audit and vulnerability scripts")
+    parser.add_argument("--run-scripts", action="store_true", help="Enable active audit scripts")
+    parser.add_argument("--exploitdb", action="store_true", help="Enable Exploit-DB offline CVE lookup")
     parser.add_argument("--timeout", type=float, help="Socket timeout in seconds")
     parser.add_argument("--config", help="Path to config.yaml")
     parser.add_argument("--json", help="Path to save JSON output")
