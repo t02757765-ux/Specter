@@ -1,0 +1,22 @@
+global:
+  timeout: 4.0
+  max_concurrency: 500
+  rate_limit: 1000
+  retries: 2
+  user_agent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) SpecterRecon/1.0.0"
+
+scanner:
+  ports: "21,22,23,25,80,443,1433,1521,3306,3389,5432,5672,6379,8000,8080,8443,9092,9200,11434,27017"
+
+probes:
+  http_endpoints:
+    - "/"
+    - "/wp-json/"
+    - "/api/v1/"
+    - "/.well-known/security.txt"
+    - "/admin/"
+    - "/login"
+    - "/favicon.ico"
+    - "/actuator/health"
+    - "/api/tags"
+    - "/api/v1/chatflows"
