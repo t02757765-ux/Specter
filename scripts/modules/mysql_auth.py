@@ -12,7 +12,7 @@ class MySQLAuthScript:
         if extracted:
             return {
                 "vulnerable": False,
-                "issue": "MySQL Protocol Info Disclosed",
-                "details": f"Disclosed parameters: {extracted}"
+                "issue": "MySQL Handshake Parameters Disclosed",
+                "details": f"Params: {extracted}"
             }
         return None
