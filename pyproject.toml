@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "specter"
 version = "1.0.0"
-description = "Specter Asynchronous Reconnaissance and Deep Fingerprinting Engine"
+description = "Specter Asynchronous Reconnaissance Engine"
 readme = "README.md"
 requires-python = ">=3.9"
 dependencies = [
