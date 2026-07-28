@@ -30,7 +30,6 @@ class HTTPProbe:
 
         conn = aiohttp.TCPConnector(ssl=False)
         async with aiohttp.ClientSession(connector=conn, timeout=self.timeout) as session:
-            # 1. Base HTTP Request
             try:
                 self._log(f"[DEBUG] Executing HTTP GET to {base_url}")
                 headers = {"User-Agent": self.user_agent}
@@ -60,7 +59,6 @@ class HTTPProbe:
                 self._log(f"[DEBUG] HTTP Probe failed for {base_url}: {str(e)}")
                 return combined_result
 
-            # 2. Favicon Fetch and MurmurHash3 Generation
             favicon_url = f"{base_url.rstrip('/')}/favicon.ico"
             try:
                 async with session.get(favicon_url, headers={"User-Agent": self.user_agent}) as fav_resp:
@@ -73,11 +71,10 @@ class HTTPProbe:
                         formatted_b64 = "\n".join(chunked_b64) + "\n"
                         calculated_hash = str(mmh3.hash(formatted_b64.encode('utf-8')))
                         combined_result["favicon_mmh3"] = calculated_hash
-                        self._log(f"[DEBUG] Computed Favicon MMH3 Hash: {calculated_hash}")
+                        self._log(f"[DEBUG] Calculated Favicon MMH3 Hash: {calculated_hash}")
             except Exception:
                 pass
 
-            # 3. Dynamic Endpoint Probing
             for ep in endpoints:
                 if ep in ["/", "/favicon.ico"]:
                     continue
@@ -90,7 +87,6 @@ class HTTPProbe:
                             "headers": dict(ep_resp.headers),
                             "body_snippet": ep_text[:500]
                         }
-                        self._log(f"[DEBUG] Probed Endpoint {ep} -> Status {ep_resp.status}")
                 except Exception:
                     pass
 
