@@ -20,3 +20,6 @@ probes:
     - "/actuator/health"
     - "/api/tags"
     - "/api/v1/chatflows"
+
+exploitdb:
+  csv_path: "files_exploits.csv"
