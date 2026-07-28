@@ -24,7 +24,7 @@ class PortScanner:
                     reader, writer = await asyncio.wait_for(conn, timeout=self.timeout)
                     writer.close()
                     await writer.wait_closed()
-                    self._log(f"[+] OPEN PORT: {ip}:{port}")
+                    self._log(f"[+] OPEN PORT DISCOVERED: {ip}:{port}")
                     return True
                 except (asyncio.TimeoutError, OSError, ConnectionRefusedError):
                     if attempt < self.retries:
