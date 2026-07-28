@@ -9,6 +9,7 @@ class Config:
         self.rate_limit: int = int(config_dict.get("global", {}).get("rate_limit", 1000))
         self.retries: int = int(config_dict.get("global", {}).get("retries", 2))
         self.user_agent: str = str(config_dict.get("global", {}).get("user_agent", "SpecterRecon/1.0.0"))
+        self.exploitdb_csv: str = str(config_dict.get("exploitdb", {}).get("csv_path", "files_exploits.csv"))
         
         scanner_ports = config_dict.get("scanner", {}).get("ports", "80,443")
         self.default_ports: List[int] = self._parse_ports(str(scanner_ports))
