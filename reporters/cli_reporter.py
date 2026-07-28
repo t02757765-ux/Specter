@@ -13,10 +13,15 @@ class CLIReporter:
         for result in scan_results:
             target = result["target"]
             open_ports = result["open_ports"]
+            jarm_hash = result.get("jarm_hash")
             
             panel_title = f"[bold green]Target: {target}[/bold green]"
             ports_str = ", ".join(map(str, open_ports)) if open_ports else "None"
-            self.console.print(Panel(f"Discovered Open Ports: [bold yellow]{ports_str}[/bold yellow]", title=panel_title, expand=False))
+            panel_content = f"Discovered Open Ports: [bold yellow]{ports_str}[/bold yellow]"
+            if jarm_hash:
+                panel_content += f"\nJARM TLS Fingerprint: [bold magenta]{jarm_hash}[/bold magenta]"
+
+            self.console.print(Panel(panel_content, title=panel_title, expand=False))
 
             if not open_ports:
                 continue
@@ -24,8 +29,8 @@ class CLIReporter:
             table = Table(show_header=True, header_style="bold magenta")
             table.add_column("Port", style="dim", width=8)
             table.add_column("Protocol / Mode", width=16)
-            table.add_column("Banner / Handshake Details", width=38)
-            table.add_column("Fingerprinted Stack", width=38)
+            table.add_column("Handshake / Banner Details", width=36)
+            table.add_column("Fingerprinted Stack", width=36)
 
             for port_detail in result["details"]:
                 port_num = str(port_detail["port"])
@@ -47,7 +52,14 @@ class CLIReporter:
 
             self.console.print(table)
 
-            # Active Scripts Output Section
+            # Exploit-DB Matching Results
+            exploit_matches = result.get("exploitdb_matches", [])
+            if exploit_matches:
+                self.console.print("  [bold yellow]⚡ Exploit-DB Offline Matches Discovered:[/bold yellow]")
+                for exp in exploit_matches:
+                    self.console.print(f"    [red][EDB-ID: {exp['id']}][/red] [white]{exp['description']}[/white] (Path: {exp['file']})")
+
+            # Active Scripts Findings
             script_outputs = result.get("script_outputs", [])
             if script_outputs:
                 self.console.print("  [bold red]▶ Active Script Audit Findings:[/bold red]")
