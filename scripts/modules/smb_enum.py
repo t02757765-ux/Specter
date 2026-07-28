@@ -9,10 +9,10 @@ class SMBEnumScript:
 
     async def execute(self, ip: str, port: int, detail: Dict[str, Any]) -> Optional[Dict[str, Any]]:
         raw_hex = detail.get("raw_socket", {}).get("raw_hex", "")
-        if "fe534d42" in raw_hex:  # \xfeSMB header hex
+        if "fe534d42" in raw_hex:
             return {
                 "vulnerable": False,
-                "issue": "SMB2 Protocol Enabled",
-                "details": "Server responds to SMB2 Negotiate Protocol requests."
+                "issue": "SMB2 Dialect Protocol Supported",
+                "details": "Server responded to SMB2 Negotiate Protocol Request."
             }
         return None
