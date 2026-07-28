@@ -3,12 +3,17 @@ import aiohttp
 import base64
 import mmh3
 from bs4 import BeautifulSoup
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Optional, Callable
 
 class HTTPProbe:
-    def __init__(self, timeout: float = 5.0, user_agent: str = "SpecterRecon/1.0.0"):
+    def __init__(self, timeout: float = 5.0, user_agent: str = "SpecterRecon/1.0.0", verbose_cb: Optional[Callable[[str], None]] = None):
         self.timeout = aiohttp.ClientTimeout(total=timeout)
         self.user_agent = user_agent
+        self.verbose_cb = verbose_cb
+
+    def _log(self, msg: str) -> None:
+        if self.verbose_cb:
+            self.verbose_cb(msg)
 
     async def analyze_url(self, base_url: str, endpoints: List[str]) -> Dict[str, Any]:
         combined_result = {
@@ -25,8 +30,9 @@ class HTTPProbe:
 
         conn = aiohttp.TCPConnector(ssl=False)
         async with aiohttp.ClientSession(connector=conn, timeout=self.timeout) as session:
-            # 1. Primary Base URL Fetch
+            # 1. Base HTTP Request
             try:
+                self._log(f"[DEBUG] Executing HTTP GET to {base_url}")
                 headers = {"User-Agent": self.user_agent}
                 async with session.get(base_url, headers=headers, allow_redirects=True) as resp:
                     combined_result["is_http"] = True
@@ -50,7 +56,8 @@ class HTTPProbe:
                         src = script.get('src')
                         if src:
                             combined_result["scripts"].append(str(src))
-            except Exception:
+            except Exception as e:
+                self._log(f"[DEBUG] HTTP Probe failed for {base_url}: {str(e)}")
                 return combined_result
 
             # 2. Favicon Fetch and MurmurHash3 Generation
@@ -64,11 +71,13 @@ class HTTPProbe:
                         for i in range(0, len(b64_data), 76):
                             chunked_b64.append(b64_data[i:i+76].decode('utf-8'))
                         formatted_b64 = "\n".join(chunked_b64) + "\n"
-                        combined_result["favicon_mmh3"] = str(mmh3.hash(formatted_b64.encode('utf-8')))
+                        calculated_hash = str(mmh3.hash(formatted_b64.encode('utf-8')))
+                        combined_result["favicon_mmh3"] = calculated_hash
+                        self._log(f"[DEBUG] Computed Favicon MMH3 Hash: {calculated_hash}")
             except Exception:
                 pass
 
-            # 3. Dynamic Endpoint Enumeration Probe
+            # 3. Dynamic Endpoint Probing
             for ep in endpoints:
                 if ep in ["/", "/favicon.ico"]:
                     continue
@@ -81,6 +90,7 @@ class HTTPProbe:
                             "headers": dict(ep_resp.headers),
                             "body_snippet": ep_text[:500]
                         }
+                        self._log(f"[DEBUG] Probed Endpoint {ep} -> Status {ep_resp.status}")
                 except Exception:
                     pass
 
