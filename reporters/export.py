@@ -12,7 +12,7 @@ class ExportManager:
     def export_csv(scan_data: List[Dict[str, Any]], filepath: str) -> None:
         with open(filepath, "w", newline="", encoding="utf-8") as f:
             writer = csv.writer(f)
-            writer.writerow(["Target", "Port", "Is_HTTP", "Status_Code", "Service_Banner", "Detected_Technologies"])
+            writer.writerow(["Target", "Port", "Is_HTTP", "Status_Code", "Service_Banner", "Detected_Technologies", "Script_Findings"])
             for item in scan_data:
                 target = item["target"]
                 for detail in item["details"]:
@@ -21,7 +21,8 @@ class ExportManager:
                     status = detail["http_data"]["status_code"]
                     banner = detail["raw_socket"]["banner"].strip().replace("\n", " ")
                     techs = "; ".join([f"{t['name']}:{t['version']}" for t in detail["technologies"]])
-                    writer.writerow([target, port, is_http, status, banner, techs])
+                    scripts = "; ".join([f"{s['script_name']}" for s in item.get("script_outputs", []) if s["port"] == port])
+                    writer.writerow([target, port, is_http, status, banner, techs, scripts])
 
     @staticmethod
     def export_html(scan_data: List[Dict[str, Any]], filepath: str) -> None:
@@ -37,6 +38,7 @@ class ExportManager:
         th, td { border: 1px solid #334155; padding: 10px; text-align: left; }
         th { background-color: #0f172a; color: #38bdf8; }
         .badge { background-color: #0284c7; color: white; padding: 3px 8px; border-radius: 4px; font-size: 0.85em; font-weight: bold; }
+        .vuln { background-color: #ef4444; color: white; padding: 2px 6px; border-radius: 4px; font-size: 0.8em; }
     </style>
 </head>
 <body>
@@ -50,18 +52,24 @@ class ExportManager:
             <h2>Target: {item['target']}</h2>
             <p><strong>Open Ports:</strong> {ports_list}</p>
             <table>
-                <tr><th>Port</th><th>Type</th><th>Status</th><th>Banner</th><th>Technologies Detected</th></tr>"""
+                <tr><th>Port</th><th>Type</th><th>Status</th><th>Handshake/Banner Details</th><th>Technologies & Audits</th></tr>"""
             for detail in item["details"]:
                 techs = "".join([f"<span class='badge'>{t['name']} ({t['version']})</span> " for t in detail['technologies']])
                 is_http_str = "HTTP/HTTPS" if detail['http_data']['is_http'] else "RAW Socket"
-                banner_preview = detail['raw_socket']['banner'][:50].replace("<", "&lt;").replace(">", "&gt;")
+                banner_preview = (detail['raw_socket']['extracted_version'] or detail['raw_socket']['banner'][:50]).replace("<", "&lt;").replace(">", "&gt;")
+                
+                script_finds = ""
+                for s in item.get("script_outputs", []):
+                    if s["port"] == detail["port"]:
+                        script_finds += f"<br/><span class='vuln'>[{s['script_name']}] {s['output'].get('issue')}</span>"
+
                 html_content += f"""
                 <tr>
                     <td>{detail['port']}</td>
                     <td>{is_http_str}</td>
                     <td>{detail['http_data']['status_code']}</td>
                     <td><code>{banner_preview}</code></td>
-                    <td>{techs}</td>
+                    <td>{techs}{script_finds}</td>
                 </tr>"""
             html_content += "</table></div>"
         
