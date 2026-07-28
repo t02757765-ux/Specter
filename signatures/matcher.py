@@ -52,24 +52,20 @@ class SignatureMatcher:
             is_match = False
             version_found = "Detected"
 
-            # Header & Cookie Match
             for h_regex in sig.get("header_regex", []):
                 if re.search(h_regex, headers_str, re.IGNORECASE) or re.search(h_regex, cookies_str, re.IGNORECASE):
                     is_match = True
                     break
 
-            # DOM Regex Match
             if not is_match:
                 for d_regex in sig.get("dom_regex", []):
                     if re.search(d_regex, dom_title, re.IGNORECASE):
                         is_match = True
                         break
 
-            # Favicon MMH3 Match
             if not is_match and favicon_hash and favicon_hash in sig.get("favicon_mmh3", []):
                 is_match = True
 
-            # Endpoint Probe Response Match
             if not is_match and sig.get("endpoint_match"):
                 ep_rule = sig["endpoint_match"]
                 path = ep_rule["path"]
