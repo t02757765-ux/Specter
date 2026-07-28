@@ -1,5 +1,16 @@
-#Specter: Asenkron Ağ Keşif ve Derin Parmak İzi Tarama Motoru
-Specter, yüksek performanslı dağıtık sistemler ve güvenlik keşif operasyonları için geliştirilmiş açık kaynaklı bir CLI aracıdır. Nmap, Masscan, WhatWeb veya Wappalyzer gibi harici alt süreç bağımlılıklarını tamamen ortadan kaldırarak; doğrudan katman 4 soket işlemleri ve katman 7 HTTP/HTTPS gözetim mekanizmaları ile çalışır.Temel ÖzelliklerNon-blocking Asenkron Mimari: asyncio altyapısı sayesinde binlerce portu aynı anda yüksek hızla tarar.Dinamik Akış Kontrolü: Token Bucket algoritması tabanlı hız sınırlama (Rate Limiting) ve otomatik yeniden deneme (Retry) mekanizması.Ham Soket Banner Analizi: SSH, FTP, SMTP, Redis, PostgreSQL, MySQL, MongoDB, RDP gibi protokoller için özel ikili paketler (binary probes) ile sürüm tespiti.Derin Web Parmak İzi: HTTP Header, Cookie, DOM başlığı, Meta etiketleri, Favicon MMH3 hash eşleşmesi ve statik uç nokta enumerasyonu.Genişletilebilir İmza Veritabanı: CMS, ERP, CRM, Modern AI Stack (Ollama, Flowise, LangChain), Web Frameworks ve DevOps araçlarını tespit eden kütüphane.Çoklu Çıktı Formatları: Terminal tablosu (rich), JSON, CSV ve bağımsız HTML rapor desteği.KurulumYerel Kurulumbashgit clone https://github.com/example/specter.gitcd specterpip install -r requirements.txtpip install -e .
+### Specter: Asenkron Ağ Keşif ve Derin Parmak İzi Tarama Motoru
+Specter, yüksek performanslı dağıtık sistemler ve güvenlik keşif operasyonları için geliştirilmiş açık kaynaklı bir CLI aracıdır.
+Nmap, Masscan, WhatWeb veya Wappalyzer gibi harici alt süreç bağımlılıklarını tamamen ortadan kaldırarak; doğrudan katman 4 soket işlemleri ve katman 7 HTTP/HTTPS gözetim mekanizmaları ile çalışır.
+### Temel Özellikler
+Non-blocking Asenkron Mimari: asyncio altyapısı sayesinde binlerce portu aynı anda yüksek hızla tarar.
+Dinamik Akış Kontrolü: Token Bucket algoritması tabanlı hız sınırlama (Rate Limiting) ve otomatik yeniden deneme (Retry) mekanizması.
+Ham Soket Banner Analizi: SSH, FTP, SMTP, Redis, PostgreSQL, MySQL, MongoDB, RDP gibi protokoller için özel ikili paketler (binary probes) ile sürüm tespiti.
+Derin Web Parmak İzi: HTTP Header, Cookie, DOM başlığı, Meta etiketleri, Favicon MMH3 hash eşleşmesi ve statik uç nokta enumerasyonu.Genişletilebilir İmza Veritabanı: CMS, ERP, CRM, Modern AI Stack (Ollama, Flowise, LangChain), Web Frameworks ve DevOps araçlarını tespit eden kütüphane.
+Çoklu Çıktı Formatları: Terminal tablosu (rich), JSON, CSV ve bağımsız HTML rapor desteği.
+### Kurulum (Yerel Kurulum)
+git clone https://github.com/example/specter.git
+cd specterpip install -r requirements.txt
+pip install -e .
 ### Docker Kurulumu
 
 ```bash
